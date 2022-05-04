@@ -14,30 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. 
  */
+
+
 plugins {
     id 'java'
     id 'application'
+	id "com.github.johnrengelman.shadow" version "7.1.2"
 }
+
+// apply plugin: 'com.github.johnrengelman.shadow'
 
 repositories {
 	mavenCentral()
 }
 
 dependencies {
-    compile 'com.ibm.informix:ifx-changestream-client:1.0.1'
+    // compile 'com.ibm.informix:ifx-changestream-client:1.0.1'
+	implementation 'com.ibm.informix:ifx-changestream-client:1.1.1'
+	implementation 'com.ibm.informix:jdbc:4.50.8'
+
+	// implementation group: 'com.ibm.informix', name: 'ifx-changestream-client', version: '1.1.1'
+	implementation group: 'com.ibm.informix', name: 'jdbc', version: '4.50.8'
+	implementation group: 'info.picocli', name: 'picocli', version: '4.6.3'
+
+	implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.36'
+	implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.2'
+	implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.2'
+	implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.17.2'
 }
 
+
 jar {
+/*
     from {
 		configurations.compile.collect { 
 			it.isDirectory() ? it : zipTree(it) 
 		}
 	}
+*/
 	manifest {
-		attributes 	'Main-Class' : 'cdc.App'	
+		attributes 	'Main-Class' : 'cdc.Main'
 	}
 }
 
 application {
-    mainClassName = 'cdc.App'
+    mainClassName = 'cdc.Main'
 }
