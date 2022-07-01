@@ -58,7 +58,7 @@ public class IfxJdbcMain implements Callable<Integer> {
         String strPrefix = generateRandomString(8);
         Class.forName("com.informix.jdbc.IfxDriver");
 
-        String SQL = "INSERT INTO testdb:cdctable.hello VALUES(?, ?)";
+        String SQL = "INSERT INTO testdb:hello VALUES(?, ?)";
         try (Connection conn = DriverManager.getConnection(jdbcUrl);
              Statement stmt = conn.createStatement();
              PreparedStatement pstmt = conn.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS)) {

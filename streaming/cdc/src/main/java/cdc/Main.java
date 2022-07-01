@@ -13,7 +13,8 @@ import java.util.concurrent.Callable;
         description = "A set of tools for develop/testing Informix CDC.",
         subcommands = {
                 cdc.CdcMain.class,
-                cdc.IfxJdbcMain.class
+                cdc.IfxJdbcMain.class,
+                cdc.FunMain.class
 })
 public class Main implements Callable<Integer> {
 

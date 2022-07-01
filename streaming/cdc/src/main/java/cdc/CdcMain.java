@@ -16,6 +16,7 @@
  */
 package cdc;
 
+import com.informix.jdbc.IfmxReadableType;
 import com.informix.jdbcx.IfxDataSource;
 import com.informix.stream.api.IfmxStreamRecord;
 import com.informix.stream.cdc.IfxCDCEngine;
@@ -30,6 +31,7 @@ import picocli.CommandLine;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.Command;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 @Command(name="cdc")
@@ -38,8 +40,14 @@ public class CdcMain implements Callable<Integer> {
     private static Logger logger = LoggerFactory.getLogger(IfxJdbcMain.class);
 
     @Parameters(description = "JDBC URI for Informix Database",
-            defaultValue = "jdbc:informix-sqli://172.20.3.242:9088/testdb:user=informix;password=in4mix")
+            defaultValue = "jdbc:informix-sqli://172.20.3.242:9088/syscdcv1:user=informix;password=in4mix")
     String jdbcUrl;
+
+    @CommandLine.Option(names = {"-s", "--seqid"}, defaultValue = "-1",
+            description = "Initial Sequence Id. For example, 146038813208." +
+                    "Default is '-1', which means start from current position"
+    )
+    Long seqId;
 
     /**
      * Computes a result, or throws an exception if unable to do so.
@@ -53,14 +61,24 @@ public class CdcMain implements Callable<Integer> {
         IfxCDCEngine.Builder builder = new IfxCDCEngine.Builder(ds);
         // builder.sequenceId(21479747608l);
         // builder.sequenceId(124572078236l);
-        builder.sequenceId(146038813208l);
+        if(seqId > 0) {
+            // builder.sequenceId(146038813208l);
+            builder.sequenceId(seqId);
+        }
         // builder.sequenceId(150339272864L);
-        builder.watchTable("testdb:informix:cdcTable", "a");
-        builder.watchTable("testdb:informix:cdcTable2", "a", "b", "c");
-        builder.watchTable("testdb:informix:cdcTableDataTimeFraction", "a", "dtf");
-        builder.watchTable("testdb:informix:cdcTable_L_varchar", "a", "b", "c", "d");
-        builder.watchTable("testdb:informix:customer", "customer_num", "fname");
-        builder.watchTable("testdb:cdctable:hello", "a", "b");
+        // builder.watchTable("testdb:informix:cdcTable", "a");
+        // builder.watchTable("testdb:informix:cdcTable2", "a", "b", "c");
+        // builder.watchTable("testdb:informix:cdcTableDataTimeFraction", "a", "dtf");
+        // builder.watchTable("testdb:informix:cdcTable_L_varchar", "a", "b", "c", "d");
+        // builder.watchTable("testdb:informix:customer", "customer_num", "fname");
+        // builder.watchTable("testdb:informix:hello", "a", "b");
+        builder.watchTable("testdb:informix:test_lvarchar", "a");
+
+        /*
+         * System Tables
+         */
+        // builder.watchTable("testdb:informix:systables", "tabname", "owner", "partnum");
+        // builder.watchTable("sysmaster:informix.systabnames", "tabname");
         builder.timeout(10);
         /*
          * TCP:
@@ -90,21 +108,24 @@ public class CdcMain implements Callable<Integer> {
 
                 if (record instanceof IfxCDCOperationRecord /* record.hasOperationData()*/) {
                     IfxCDCOperationRecord opRecord = ((IfxCDCOperationRecord) record);
-                    System.out.println(opRecord.toString());
+                    logger.info(opRecord.toString());
+                    for(Map.Entry<String, IfmxReadableType> entry : opRecord.getData().entrySet()) {
+                        logger.info("entry : {} -> {}", entry.getKey(), entry.getValue());
+                    }
                 } else if (record instanceof IfxCDCMetaDataRecord) {
                     IfxCDCMetaDataRecord metaDataRecord = (IfxCDCMetaDataRecord) record;
-                    System.out.println(metaDataRecord.toString());
+                    logger.info(metaDataRecord.toString());
                 } else if (record instanceof IfxCDCBeginTransactionRecord) {
                     IfxCDCBeginTransactionRecord beginTransactionRecord = (IfxCDCBeginTransactionRecord) record;
-                    System.out.println(beginTransactionRecord.toString());
+                    logger.info(beginTransactionRecord.toString());
                 } else if (record instanceof IfxCDCCommitTransactionRecord) {
                     IfxCDCCommitTransactionRecord commitTransactionRecord = (IfxCDCCommitTransactionRecord) record;
-                    System.out.println(commitTransactionRecord.toString());
+                    logger.info(commitTransactionRecord.toString());
                 } else if (record instanceof IfxCDCTimeoutRecord) {
                     IfxCDCTimeoutRecord timeoutRecord = (IfxCDCTimeoutRecord) record;
-                    System.out.println(timeoutRecord.toString());
+                    logger.info(timeoutRecord.toString());
                 } else {
-                    System.out.println("Otherwise : " + record.toString());
+                    logger.info("Unknown type : {} ", record.toString());
                 }
             }
         } catch (Exception ex) {

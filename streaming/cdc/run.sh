@@ -1,7 +1,8 @@
 #!/bin/bash
 
 
-export JAVA_HOME=$HOME/local/jdk8u282-b08/Contents/Home/
+# export JAVA_HOME=$HOME/local/jdk8u282-b08/Contents/Home/
+export JAVA_HOME=$HOME/Library/Java/JavaVirtualMachines/openjdk-17.0.2/Contents/Home
 
 set -x
 
