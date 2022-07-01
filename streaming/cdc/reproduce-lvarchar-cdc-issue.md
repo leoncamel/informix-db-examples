@@ -1,5 +1,5 @@
 
-# Reproduce the issue Informix CDC with LVARCHAR datatype
+# Reproduce the issue Informix CDC with LVARCHAR datatype and smallfloat datatype
 
 ## Step 1, run informix database docker
 
@@ -23,8 +23,9 @@ $ docker run -it --name ifx --privileged -e SIZE=small \
 
 Notes, we create this table in `testdb`:
 
-```text
+```sql
 create table if not exists test_lvarchar(a lvarchar(400));
+create table if not exists testdb:informix.test_smallfloat(a smallfloat);
 ```
 
 ## Step 3, now we run our demo CDC program
@@ -35,16 +36,22 @@ $ ./gradlew clean shadowJar && ./run.sh cdc
 
 ## Step 4, insert one row into the table
 
-```text
+```sql
 select * from testdb:informix.test_lvarchar;
-
 insert into testdb:informix.test_lvarchar values("hello");
+```
+
+Or, for `smallfloat` testcase
+
+```sql
+select * from testdb:informix.test_smallfloat;
+insert into testdb:informix.test_smallfloat values (1.0);
 ```
 
 Then, switch back to you cdc terminal, you will see the prompt like this:
 
 ```text
-./gradlew clean shadowJar && ./run.sh cdc
+$ ./gradlew clean shadowJar && ./run.sh cdc
 
 Deprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.
 
@@ -85,3 +92,29 @@ Caused by: java.lang.ArrayIndexOutOfBoundsException: Index 12 out of bounds for 
 11:28:07.433 [main] INFO  cdc.IfxJdbcMain - Command Exit with code = 0
 ```
 
+```text
+$ ./gradlew clean shadowJar && ./run.sh cdc
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/7.4.2/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 1s
+4 actionable tasks: 4 executed
++ JAVA_OPTS=-Dlog4j2.configurationFile=src/main/resources/log4j2.xml
++ /Users/xiaolin/Library/Java/JavaVirtualMachines/openjdk-17.0.2/Contents/Home/bin/java -Dlog4j2.configurationFile=src/main/resources/log4j2.xml -jar build/libs/cdc-all.jar cdc
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+11:37:23.300 [main] INFO  cdc.IfxJdbcMain - [METADATA] Label [1] Columns: [Column Type: java.lang.Float
+SQL Type: 4
+Extended ID: 0]
+11:37:23.355 [main] INFO  cdc.IfxJdbcMain - [METADATA] Label [2] Columns: [Column Type: java.lang.String
+SQL Type: 43
+Extended ID: 0]
+11:37:28.591 [main] INFO  cdc.IfxJdbcMain - [BEGIN] Transaction ID [32] Sequence ID [77309931544]
+11:37:28.621 [main] INFO  cdc.IfxJdbcMain - [INSERT] Transaction ID [32] Sequence ID [77309931600] Label [1]
+11:37:28.626 [main] ERROR com.informix.stream.cdc.records.IfxCDCOperationRecord - Unsupported type: Column Type: java.lang.Float
+SQL Type: 4
+Extended ID: 0
+```

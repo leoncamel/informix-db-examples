@@ -72,7 +72,8 @@ public class CdcMain implements Callable<Integer> {
         // builder.watchTable("testdb:informix:cdcTable_L_varchar", "a", "b", "c", "d");
         // builder.watchTable("testdb:informix:customer", "customer_num", "fname");
         // builder.watchTable("testdb:informix:hello", "a", "b");
-        builder.watchTable("testdb:informix:test_lvarchar", "a");
+        builder.watchTable("testdb:informix.test_smallfloat", "a");
+        builder.watchTable("testdb:informix.test_lvarchar", "a");
 
         /*
          * System Tables
